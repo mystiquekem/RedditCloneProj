@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">RedditClone</string>
+
+    <string name="nav_profile">Profile</string>
+    <string name="nav_curate">Curate your file</string>
+    <string name="nav_premium">Reddit Premium</string>
+    <string name="nav_drafts">Drafts</string>
+    <string name="nav_community">Create a community</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_vault">Vault</string>
+    <string name="nav_saved">Saved</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+</resources>
