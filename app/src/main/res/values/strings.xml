@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">RedditClone</string>
-
+    <!-- Navigation Drawer -->
+    <string name="nav_inbox">Inbox</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_create">Create</string>
+    <string name="nav_answers">Answers</string>
+    <string name="nav_home">Home</string>
     <string name="nav_profile">Profile</string>
     <string name="nav_curate">Curate your file</string>
     <string name="nav_premium">Reddit Premium</string>
