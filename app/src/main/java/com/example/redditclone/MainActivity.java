@@ -14,12 +14,21 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
+import com.example.redditclone.fragment.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout mDrawerLayout;
+
+    private static final int FRAGMENT_PROFILE = 0;
+    private static final int FRAGMENT_CURATE = 1;
+    private static final int FRAGMENT_PREMIUM = 2;
+
+    private int mCurrentFragment = FRAGMENT_PROFILE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +72,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = menuItem.getItemId();
         if (id == R.id.nav_profile) {
             // Handle the profile action
+            if (mCurrentFragment != FRAGMENT_PROFILE) {
+                replaceFragment(new ProfileFragment());
+                mCurrentFragment = FRAGMENT_PROFILE;
+            }
         } else if (id == R.id.nav_curate) {
             // Handle the curate action
+            if (mCurrentFragment != FRAGMENT_CURATE) {
+                replaceFragment(new ProfileFragment());
+                mCurrentFragment = FRAGMENT_CURATE;
+            }
         } else if (id == R.id.nav_premium) {
             // Handle the premium action
+            if (mCurrentFragment != FRAGMENT_PREMIUM) {
+                replaceFragment(new ProfileFragment());
+                mCurrentFragment = FRAGMENT_PREMIUM;
+            }
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -80,5 +101,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             super.onBackPressed();
         }
+    }
+    private void replaceFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_frame, fragment);
+        transaction.commit();
     }
 }
