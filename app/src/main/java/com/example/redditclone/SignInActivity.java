@@ -47,7 +47,7 @@ public class SignInActivity extends AppCompatActivity {
         initListener();
     }
 
-    private void initUI(){
+    private void initUI() {
         progressDialog = new ProgressDialog(this);
 
         layoutSignUp = findViewById(R.id.layout_sign_up);
@@ -58,7 +58,7 @@ public class SignInActivity extends AppCompatActivity {
     }
 
 
-    private void initListener(){
+    private void initListener() {
         layoutSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,24 +74,26 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
     }
-        private void onClickSignIn(){
-            String strEmail = edtEmail.getText().toString().trim();
-            String strPassword = edtPassword.getText().toString().trim();
-            progressDialog.show();
-            FirebaseAuth auth = FirebaseAuth.getInstance();
-            auth.signInWithEmailAndPassword(strEmail, strPassword)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            progressDialog.dismiss();
-                            if (task.isSuccessful()) {
-                                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                                startActivity(intent);
-                                finishAffinity();
-                            } else {
-                                Toast.makeText(SignInActivity.this, "Authentication failed.",
-                                        Toast.LENGTH_SHORT).show();
-                            }
+
+    private void onClickSignIn() {
+        String strEmail = edtEmail.getText().toString().trim();
+        String strPassword = edtPassword.getText().toString().trim();
+        progressDialog.show();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.signInWithEmailAndPassword(strEmail, strPassword)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        progressDialog.dismiss();
+                        if (task.isSuccessful()) {
+                            Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finishAffinity();
+                        } else {
+                            Toast.makeText(SignInActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
                         }
-                    });
+                    }
+                });
     }
+}

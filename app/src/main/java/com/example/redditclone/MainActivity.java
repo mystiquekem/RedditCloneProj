@@ -92,6 +92,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initUI();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationViewLeft = findViewById(R.id.nav_view_left);
+        navigationViewLeft.setNavigationItemSelectedListener(this);
+
         mNavigationView.setNavigationItemSelectedListener(this);
 
         replaceFragment(new HomeFragment());
