@@ -44,4 +44,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
+
+    //load img from url
+    implementation("com.github.bumptech.glide:glide:5.0.5")
+    //circle img view
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+
 }
