@@ -1,19 +1,35 @@
 package com.example.redditclone;
 
+import static android.content.ContentValues.TAG;
+
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
 public class SignInActivity extends AppCompatActivity {
 
     private LinearLayout layoutSignUp;
+    private EditText edtEmail, edtPassword;
+    private Button btnSignIn;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +48,13 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void initUI(){
+        progressDialog = new ProgressDialog(this);
+
         layoutSignUp = findViewById(R.id.layout_sign_up);
+        edtEmail = findViewById(R.id.edt_email);
+        edtPassword = findViewById(R.id.edt_password);
+        btnSignIn = findViewById(R.id.btn_sign_in);
+
     }
 
 
@@ -44,5 +66,33 @@ public class SignInActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickSignIn();
+            }
+        });
+    }
+        private void onClickSignIn(){
+            String strEmail = edtEmail.getText().toString().trim();
+            String strPassword = edtPassword.getText().toString().trim();
+            progressDialog.show();
+            FirebaseAuth auth = FirebaseAuth.getInstance();
+            auth.createUserWithEmailAndPassword(strEmail, strPassword)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                progressDialog.dismiss();
+                                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Toast.makeText(SignInActivity.this, "Authentication failed.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
     }
 }
