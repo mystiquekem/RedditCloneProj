@@ -79,15 +79,15 @@ public class SignInActivity extends AppCompatActivity {
             String strPassword = edtPassword.getText().toString().trim();
             progressDialog.show();
             FirebaseAuth auth = FirebaseAuth.getInstance();
-            auth.createUserWithEmailAndPassword(strEmail, strPassword)
+            auth.signInWithEmailAndPassword(strEmail, strPassword)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
+                            progressDialog.dismiss();
                             if (task.isSuccessful()) {
-                                progressDialog.dismiss();
                                 Intent intent = new Intent(SignInActivity.this, MainActivity.class);
                                 startActivity(intent);
-                                finish();
+                                finishAffinity();
                             } else {
                                 Toast.makeText(SignInActivity.this, "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
@@ -95,4 +95,3 @@ public class SignInActivity extends AppCompatActivity {
                         }
                     });
     }
-}
