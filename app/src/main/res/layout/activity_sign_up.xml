@@ -20,6 +20,8 @@
         android:imeOptions="actionNext"
         android:maxLength="100"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:textColor="@color/black"/>
 
 
@@ -31,6 +33,8 @@
         android:inputType="textPassword"
         android:imeOptions="actionDone"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:maxLength="100"
         android:textColor="@color/black"/>
 
@@ -40,6 +44,8 @@
         android:layout_height="wrap_content"
         android:text="Sign Up"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:textAllCaps="true" />
 
 </LinearLayout>
