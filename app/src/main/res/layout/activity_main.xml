@@ -23,7 +23,15 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="#242323"
+                android:background="@color/white"
+                app:title="Reddit"
+                app:titleTextColor="@color/orange"
+                app:titleTextAppearance="@style/RedditFont"
+                app:titleMarginBottom="15dp"
+                app:titleMarginStart="0dp"
+                app:titleMarginEnd="0dp"
+                app:contentInsetStartWithNavigation="0dp"
+                app:contentInsetStart="0dp"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
@@ -34,12 +42,11 @@
             android:layout_height="match_parent"
             android:layout_above="@+id/bottom_navigation"
             android:layout_below="@+id/appbar_layout"
-            android:layout_marginTop="-1dp"
-            android:layout_marginBottom="1dp" />
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="-1dp" />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
-            android:background="#242323"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -54,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/menu_left_drawer"/>
+        app:menu="@menu/left_drawer_menu" />
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"

@@ -1,11 +1,14 @@
 package com.example.redditclone;
 
-import android.app.ProgressDialog;
+import static androidx.core.app.ActivityCompat.finishAffinity;
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,12 +22,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class SignUpActivity extends AppCompatActivity {
 
     private EditText edtEmail, edtpassword;
     private Button btnSignUp;
-    private ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,10 +49,9 @@ public class SignUpActivity extends AppCompatActivity {
         edtEmail = findViewById(R.id.edt_email);
         edtpassword = findViewById(R.id.edt_password);
         btnSignUp = findViewById(R.id.btn_sign_up);
-
-
-        progressDialog = new ProgressDialog(this);
     }
+
+
     private void initListener() {
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,17 +61,15 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    private void onClickSignUp() {
+            private void onClickSignUp() {
                 String strEmail = edtEmail.getText().toString().trim();
                 String strPassword = edtpassword.getText().toString().trim();
                 FirebaseAuth auth = FirebaseAuth.getInstance();
-                progressDialog.show();
                 auth.createUserWithEmailAndPassword(strEmail, strPassword)
                         .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                             @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                                progressDialog.dismiss();
-                        if (task.isSuccessful()) {
+                    if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                        Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
                        startActivity(intent);
