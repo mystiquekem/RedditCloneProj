@@ -5,35 +5,11 @@
         android:icon="@drawable/ic_home"/>
 
     <item android:title="My Account">
+
         <menu>
             <item android:id="@+id/nav_my_profile"
                 android:title="My Profile"
                 android:icon="@drawable/ic_profile"/>
-
-            <item android:id="@+id/nav_curate"
-                android:title="@string/nav_curate"
-                android:icon="@drawable/ic_curate"/>
-            <item android:id="@+id/nav_premium"
-                android:title="@string/nav_premium"
-                android:icon="@drawable/ic_premium"/>
-            <item android:id="@+id/nav_drafts"
-                android:title="@string/nav_drafts"
-                android:icon="@drawable/ic_draft"/>
-            <item android:id="@+id/nav_community"
-                android:title="@string/nav_community"
-                android:icon="@drawable/ic_community"/>
-            <item android:id="@+id/nav_history"
-                android:title="@string/nav_history"
-                android:icon="@drawable/ic_history"/>
-            <item android:id="@+id/nav_vault"
-                android:title="@string/nav_vault"
-                android:icon="@drawable/ic_vault"/>
-            <item android:id="@+id/nav_saved"
-                android:title="@string/nav_saved"
-                android:icon="@drawable/ic_saved"/>
-            <item android:id="@+id/nav_settings"
-                android:title="@string/nav_settings"
-                android:icon="@drawable/ic_setting"/>
             <item android:id="@+id/nav_change_password"
                 android:title="Change Password"
                 android:icon="@drawable/ic_change_password"/>
@@ -42,4 +18,35 @@
                 android:icon="@drawable/ic_log_out"/>
         </menu>
     </item>
+
+     <group android:checkableBehavior="single">
+
+         <item android:id="@+id/nav_curate"
+             android:title="@string/nav_curate"
+             android:icon="@drawable/ic_curate"/>
+     </group>
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_premium"
+            android:title="@string/nav_premium"
+            android:icon="@drawable/ic_premium"/>
+        <item android:id="@+id/nav_drafts"
+            android:title="@string/nav_drafts"
+            android:icon="@drawable/ic_draft"/>
+        <item android:id="@+id/nav_community"
+            android:title="@string/nav_community"
+            android:icon="@drawable/ic_community"/>
+        <item android:id="@+id/nav_history"
+            android:title="@string/nav_history"
+            android:icon="@drawable/ic_history"/>
+        <item android:id="@+id/nav_vault"
+            android:title="@string/nav_vault"
+            android:icon="@drawable/ic_vault"/>
+        <item android:id="@+id/nav_saved"
+            android:title="@string/nav_saved"
+            android:icon="@drawable/ic_saved"/>
+        <item android:id="@+id/nav_settings"
+            android:title="@string/nav_settings"
+            android:icon="@drawable/ic_setting"/>
+
+    </group>
 </menu>

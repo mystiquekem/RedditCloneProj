@@ -70,7 +70,7 @@ public class MyProfileFragment extends Fragment {
         }
         edtFullName.setText(user.getDisplayName());
         edtEmail.setText(user.getEmail());
-        Glide.with(getActivity()).load(user.getPhotoUrl()).error(R.drawable.profile_default).into(imgAvatar);
+        Glide.with(getActivity()).load(user.getPhotoUrl()).error(R.drawable.ic_avatar_default).into(imgAvatar);
 
     }
 

@@ -4,33 +4,33 @@
     <group android:checkableBehavior="single">
 
         <item
-            android:id="@+id/nav_left_explore"
+            android:id="@+id/nav_left_discover_communities"
+            android:icon="@drawable/ic_home"
+            android:title="Discover communities"
+            tools:ignore="HardcodedText"/>
+        <item
+            android:id="@+id/nav_left_start_community"
             android:icon="@drawable/ic_community"
-            android:title="Explore Communities"
+            android:title="Start a community"
             tools:ignore="HardcodedText"/>
         <item
-            android:id="@+id/nav_left_community"
-            android:icon="@drawable/ic_add"
-            android:title="Start a Community"
+            android:id="@+id/nav_left_Games"
+            android:icon="@drawable/ic_community"
+            android:title="Discover more games"
             tools:ignore="HardcodedText"/>
         <item
-            android:id="@+id/nav_left_game"
-            android:icon="@drawable/ic_game"
-            android:title="Discover More Games"
-            tools:ignore="HardcodedText"/>
-        <item
-            android:id="@+id/nav_left_reddit_pro"
-            android:icon="@drawable/ic_redditpro"
+            android:id="@+id/nav_left_Reddit_pro"
+            android:icon="@drawable/ic_community"
             android:title="Try Reddit Pro"
             tools:ignore="HardcodedText"/>
         <item
-            android:id="@+id/nav_left_feed"
-            android:icon="@drawable/ic_feed"
+            android:id="@+id/nav_left_feed_custom"
+            android:icon="@drawable/ic_community"
             android:title="Custom Feeds"
             tools:ignore="HardcodedText"/>
         <item
-            android:id="@+id/nav_left_chart"
-            android:icon="@drawable/ic_analys"
+            android:id="@+id/nav_left_all"
+            android:icon="@drawable/ic_curate"
             android:title="All"
             tools:ignore="HardcodedText"/>
     </group>
