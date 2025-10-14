@@ -98,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        toggle.getDrawerArrowDrawable().setColor(getResources().getColor(android.R.color.black));
+
         NavigationView navigationViewLeft = findViewById(R.id.nav_view_left);
         navigationViewLeft.setNavigationItemSelectedListener(this);
 
@@ -206,9 +208,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }else {
             tvname.setVisibility(View.VISIBLE);
         }
-            tvname.setText(strName);
+            tvname.setText("u/" + strName);
             tvemail.setText(strEmail);
-            Glide.with(this).load(photoUrl).error(R.drawable.ic_avatar_default).into(imgavatar);
+            Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
     }
 
     @Override
