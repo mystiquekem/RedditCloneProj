@@ -33,7 +33,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
-import com.example.redditclone.fragment.DiscoverCommunitiesFragment;
 import com.example.redditclone.fragment.HomeFragment;
 import com.example.redditclone.fragment.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
@@ -54,32 +53,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private final ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if(result.getResultCode() == RESULT_OK){
-                Intent intent = result.getData();
-                if (intent == null){
-                    return;
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if(result.getResultCode() == RESULT_OK){
+                        Intent intent = result.getData();
+                        if (intent == null){
+                            return;
+                        }
+                        Uri uri = intent.getData();
+                        mMyProfileFragment.setUri(uri);
+                        try {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            mMyProfileFragment.setBitmapImageView(bitmap);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                Uri uri = intent.getData();
-                mMyProfileFragment.setUri(uri);
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    mMyProfileFragment.setBitmapImageView(bitmap);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
+            });
 
     private static final int FRAGMENT_PROFILE = 0;
     private static final int FRAGMENT_CURATE = 1;
     private static final int FRAGMENT_PREMIUM = 2;
     private static final int FRAGMENT_MY_PROFILE = 3;
-
-    private static final int FRAGMENT_DISCOVER_COMMUNITIES = 4;
-
 
     private NavigationView mNavigationView;
 
@@ -101,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        toggle.getDrawerArrowDrawable().setColor(getResources().getColor(android.R.color.black));
 
         NavigationView navigationViewLeft = findViewById(R.id.nav_view_left);
         navigationViewLeft.setNavigationItemSelectedListener(this);
@@ -177,17 +175,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 replaceFragment(mMyProfileFragment);
                 mCurrentFragment = FRAGMENT_MY_PROFILE;
             }
-        } else if (id == R.id.nav_left_discover_communities) {
-            DiscoverCommunitiesFragment discoverFragment = new DiscoverCommunitiesFragment();
-            if (mCurrentFragment !=FRAGMENT_DISCOVER_COMMUNITIES){
-                replaceFragment(discoverFragment);
-                mCurrentFragment = FRAGMENT_DISCOVER_COMMUNITIES;
-            }
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.content_frame, discoverFragment) // Replace the content of the container
-                    .addToBackStack(null) // Add the transaction to the back stack
-                    .commit();
         }
+
         mDrawerLayout.closeDrawer(GravityCompat.END);
         return true;
     }
@@ -211,17 +200,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (user == null){
             return;
         }
-            String strName = user.getDisplayName();
-            String strEmail = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+        String strName = user.getDisplayName();
+        String strEmail = user.getEmail();
+        Uri photoUrl = user.getPhotoUrl();
         if (strName == null) {
             tvname.setVisibility(View.GONE);
         }else {
             tvname.setVisibility(View.VISIBLE);
         }
-            tvname.setText(strName);
-            tvemail.setText(strEmail);
-            Glide.with(this).load(photoUrl).error(R.drawable.ic_avatar_default).into(imgavatar);
+        tvname.setText("u/" + strName);
+        tvemail.setText(strEmail);
+        Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
     }
 
     @Override
