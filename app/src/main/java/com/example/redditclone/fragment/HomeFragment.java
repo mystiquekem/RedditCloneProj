@@ -147,7 +147,7 @@ public class HomeFragment extends Fragment implements PostAdapter.OnPostClickLis
     }
 
     private void showCreatePostDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.FullScreenDialogStyle);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.FullScreenDialogStyle);
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_post, null);
         builder.setView(dialogView);
@@ -201,7 +201,6 @@ public class HomeFragment extends Fragment implements PostAdapter.OnPostClickLis
             bottomNavigationView.setSelectedItemId(R.id.bottom_home);
         }
     }
-
     @Override
     public void onResume() {
         super.onResume();
