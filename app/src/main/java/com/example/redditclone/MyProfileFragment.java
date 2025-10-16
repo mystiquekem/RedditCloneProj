@@ -45,7 +45,7 @@ public class MyProfileFragment extends Fragment {
             });
         }
     }
-
+//yay
     @Override
     public void onDestroyView() {
         super.onDestroyView();

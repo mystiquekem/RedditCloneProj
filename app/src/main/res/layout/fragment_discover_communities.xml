@@ -21,5 +21,4 @@
         android:padding="16dp"
         android:text="abc"
         android:gravity="center" />
-
 </LinearLayout>
