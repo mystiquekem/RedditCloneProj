@@ -34,6 +34,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.example.redditclone.fragment.HomeFragment;
+import com.example.redditclone.fragment.MyProfileFragment;
 import com.example.redditclone.fragment.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,26 +52,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView tvname, tvemail;
     private final MyProfileFragment mMyProfileFragment = new MyProfileFragment();
 
-    private final ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if(result.getResultCode() == RESULT_OK){
-                Intent intent = result.getData();
-                if (intent == null){
-                    return;
-                }
-                Uri uri = intent.getData();
-                mMyProfileFragment.setUri(uri);
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    mMyProfileFragment.setBitmapImageView(bitmap);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
 
     private static final int FRAGMENT_PROFILE = 0;
     private static final int FRAGMENT_CURATE = 1;
@@ -200,17 +181,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (user == null){
             return;
         }
-            String strName = user.getDisplayName();
-            String strEmail = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+        String strName = user.getDisplayName();
+        String strEmail = user.getEmail();
+        Uri photoUrl = user.getPhotoUrl();
         if (strName == null) {
             tvname.setVisibility(View.GONE);
         }else {
             tvname.setVisibility(View.VISIBLE);
         }
-            tvname.setText("u/" + strName);
-            tvemail.setText(strEmail);
-            Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
+        tvname.setText("u/" + strName);
+        tvemail.setText(strEmail);
+        Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
     }
 
     @Override
@@ -229,6 +210,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+
     }
 }
