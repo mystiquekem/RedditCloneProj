@@ -2,10 +2,11 @@ package com.example.redditclone.fragment;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -18,17 +19,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.redditclone.Post;
 import com.example.redditclone.PostAdapter;
 import com.example.redditclone.R;
+import com.example.redditclone.network.ApiService;
+import com.example.redditclone.network.PostContainer;
+import com.example.redditclone.network.RedditResponse;
+import com.example.redditclone.network.RetrofitClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements PostAdapter.OnPostClickListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-    private RecyclerView recyclerView;
+public class HomeFragment extends Fragment{
+
     private BottomNavigationView bottomNavigationView;
+    private final List<Post> postList = new ArrayList<>();
+    private ApiService apiService;
     private PostAdapter postAdapter;
-    private List<Post> postList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -36,15 +45,41 @@ public class HomeFragment extends Fragment implements PostAdapter.OnPostClickLis
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         initViews(view);
-        setupRecyclerView();
         setupBottomNavigation();
-        loadSampleData();
+        apiService = RetrofitClient.getApiService();
+        fetchPosts();
 
         return view;
     }
 
+    private void fetchPosts() {
+        apiService.getPosts().enqueue(new Callback<RedditResponse>() {
+            @Override
+            public void onResponse(Call<RedditResponse> call, Response<RedditResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    postList.clear();
+                    for (PostContainer container : response.body().getData().getChildren()) {
+                        postList.add(container.getPost());
+                    }
+                    postAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(getContext(), "Failed to fetch posts", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RedditResponse> call, Throwable t) {
+                Log.e("HomeFragment", "Error fetching posts", t);
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void initViews(View view) {
-        recyclerView = view.findViewById(R.id.rvPosts);
+        RecyclerView recyclerView = view.findViewById(R.id.rvPosts);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        postAdapter = new PostAdapter(postList);
+        recyclerView.setAdapter(postAdapter);
 
         // Get the bottom navigation from the parent activity
         if (getActivity() != null) {
@@ -77,77 +112,9 @@ public class HomeFragment extends Fragment implements PostAdapter.OnPostClickLis
         }
     }
 
-    private void setupRecyclerView() {
-        postAdapter = new PostAdapter(postList, this);
-        recyclerView.setAdapter(postAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-    }
-
-    private void loadSampleData() {
-        postList.add(new Post(
-                "1",
-                "Welcome to Reddit Clone!",
-                "This is our first post in the Reddit-like app. Feel free to upvote, downvote, or create your own posts!",
-                "admin",
-                System.currentTimeMillis() - 3600000,
-                15,
-                2,
-                3,
-                null
-        ));
-
-        postList.add(new Post(
-                "2",
-                "What's your favorite programming language?",
-                "I'm trying to decide which language to learn next. Currently know Java and Python.",
-                "code_newbie",
-                System.currentTimeMillis() - 7200000,
-                89,
-                5,
-                32,
-                null
-        ));
-
-        postList.add(new Post(
-                "3",
-                "Android Development Tips",
-                "Always test your app on multiple devices and use RecyclerView for lists!",
-                "android_dev",
-                System.currentTimeMillis() - 10800000,
-                45,
-                1,
-                12,
-                null
-        ));
-
-        postAdapter.updatePosts(postList);
-    }
-
-    @Override
-    public void onPostClick(Post post) {
-        Toast.makeText(getContext(), "Clicked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onVoteClick(Post post, boolean isUpvote) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getId().equals(post.getId())) {
-                Post updatedPost = postList.get(i);
-                if (isUpvote) {
-                    updatedPost.setUpvotes(updatedPost.getUpvotes() + 1);
-                } else {
-                    updatedPost.setDownvotes(updatedPost.getDownvotes() + 1);
-                }
-                postList.set(i, updatedPost);
-                postAdapter.notifyItemChanged(i);
-
-                break;
-            }
-        }
-    }
 
     private void showCreatePostDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.FullScreenDialogStyle);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.FullScreenDialogStyle);
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_post, null);
         builder.setView(dialogView);
@@ -170,7 +137,8 @@ public class HomeFragment extends Fragment implements PostAdapter.OnPostClickLis
             String content = etPostContent.getText().toString().trim();
 
             if (!title.isEmpty()) {
-                createNewPost(title, content);
+                // Create a new Post object with the provided title and content
+
                 dialog.dismiss();
             } else {
                 Toast.makeText(getContext(), "Title cannot be empty", Toast.LENGTH_SHORT).show();
@@ -181,26 +149,7 @@ public class HomeFragment extends Fragment implements PostAdapter.OnPostClickLis
     }
 
 
-    private void createNewPost(String title, String content) {
-        String newId = String.valueOf(System.currentTimeMillis());
-        Post newPost = new Post(
-                newId,
-                title,
-                content,
-                "tv_name",
-                System.currentTimeMillis(),
-                0, 0, 0, null
-        );
 
-        postList.add(0, newPost);
-        postAdapter.notifyItemInserted(0);
-        recyclerView.smoothScrollToPosition(0);
-
-        // Reset bottom navigation to Home after creating post
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setSelectedItemId(R.id.bottom_home);
-        }
-    }
     @Override
     public void onResume() {
         super.onResume();
