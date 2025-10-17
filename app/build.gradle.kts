@@ -64,4 +64,5 @@ dependencies {
 
     //circleImageView có viền trắng
     implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

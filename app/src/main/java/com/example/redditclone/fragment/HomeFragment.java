@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,7 +16,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.redditclone.AppExecutors;
 import com.example.redditclone.Post;
 import com.example.redditclone.PostAdapter;
 import com.example.redditclone.R;
@@ -32,12 +35,18 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeFragment extends Fragment{
+public class HomeFragment extends Fragment {
 
     private BottomNavigationView bottomNavigationView;
-    private final List<Post> postList = new ArrayList<>();
+    private List<Post> postList = new ArrayList<>();
     private ApiService apiService;
     private PostAdapter postAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private RecyclerView recyclerView;
+    private LinearLayoutManager layoutManager;
+    private ProgressBar loadingIndicator;
+    private boolean isLoading = false;
+    private String nextPageToken = "";
 
     @Nullable
     @Override
@@ -45,46 +54,112 @@ public class HomeFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         initViews(view);
-        setupBottomNavigation();
+        setupSwipeRefresh();
+        setupInfiniteScroll();
         apiService = RetrofitClient.getApiService();
-        fetchPosts();
+        setupBottomNavigation();
+
+        // Fetch posts on background thread
+        AppExecutors.getInstance().diskIO().execute(() -> fetchPosts(""));
 
         return view;
     }
 
-    private void fetchPosts() {
+    private void initViews(View view) {
+        recyclerView = view.findViewById(R.id.rvPosts);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+        loadingIndicator = view.findViewById(R.id.loadingIndicator);
+
+        layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        postAdapter = new PostAdapter(postList);
+        recyclerView.setAdapter(postAdapter);
+
+        if (getActivity() != null) {
+            bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        }
+    }
+
+    private void setupSwipeRefresh() {
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            nextPageToken = "";
+            postList.clear();
+            postAdapter.notifyDataSetChanged();
+
+            // Fetch on background thread
+            AppExecutors.getInstance().diskIO().execute(() -> fetchPosts(""));
+        });
+        swipeRefreshLayout.setColorSchemeResources(R.color.orange);
+    }
+
+    private void setupInfiniteScroll() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 5 &&
+                        firstVisibleItemPosition >= 0 && totalItemCount > 0) {
+                    isLoading = true;
+
+                    AppExecutors.getInstance().mainThread().execute(() -> {
+                        loadingIndicator.setVisibility(View.VISIBLE);
+                    });
+
+                    // Fetch on background thread
+                    AppExecutors.getInstance().diskIO().execute(() -> fetchPosts(nextPageToken));
+                }
+            }
+        });
+    }
+
+    private void fetchPosts(String after) {
         apiService.getPosts().enqueue(new Callback<RedditResponse>() {
             @Override
             public void onResponse(Call<RedditResponse> call, Response<RedditResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    postList.clear();
-                    for (PostContainer container : response.body().getData().getChildren()) {
-                        postList.add(container.getPost());
-                    }
-                    postAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(getContext(), "Failed to fetch posts", Toast.LENGTH_SHORT).show();
-                }
+                // Process response on background thread then update UI on main thread
+                AppExecutors.getInstance().diskIO().execute(() -> {
+                    if (!isAdded()) return;
+
+                    AppExecutors.getInstance().mainThread().execute(() -> {
+                        if (!isAdded()) return;
+
+                        swipeRefreshLayout.setRefreshing(false);
+                        loadingIndicator.setVisibility(View.GONE);
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            List<PostContainer> children = response.body().getData().getChildren();
+                            for (PostContainer container : children) {
+                                postList.add(container.getPost());
+                            }
+                            nextPageToken = response.body().getData().getAfter();
+                            postAdapter.notifyDataSetChanged();
+                            isLoading = false;
+                        } else {
+                            Toast.makeText(getContext(), "Failed to fetch posts", Toast.LENGTH_SHORT).show();
+                            isLoading = false;
+                        }
+                    });
+                });
             }
 
             @Override
             public void onFailure(Call<RedditResponse> call, Throwable t) {
                 Log.e("HomeFragment", "Error fetching posts", t);
-                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+
+                AppExecutors.getInstance().mainThread().execute(() -> {
+                    if (!isAdded()) return;
+
+                    swipeRefreshLayout.setRefreshing(false);
+                    loadingIndicator.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    isLoading = false;
+                });
             }
         });
-    }
-
-    private void initViews(View view) {
-        RecyclerView recyclerView = view.findViewById(R.id.rvPosts);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        postAdapter = new PostAdapter(postList);
-        recyclerView.setAdapter(postAdapter);
-
-        // Get the bottom navigation from the parent activity
-        if (getActivity() != null) {
-            bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
-        }
     }
 
     private void setupBottomNavigation() {
@@ -107,11 +182,9 @@ public class HomeFragment extends Fragment{
                 return false;
             });
 
-            // Set Home as selected when fragment loads
             bottomNavigationView.setSelectedItemId(R.id.bottom_home);
         }
     }
-
 
     private void showCreatePostDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.FullScreenDialogStyle);
@@ -127,7 +200,6 @@ public class HomeFragment extends Fragment{
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        // Make it fullscreen
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         }
@@ -137,8 +209,6 @@ public class HomeFragment extends Fragment{
             String content = etPostContent.getText().toString().trim();
 
             if (!title.isEmpty()) {
-                // Create a new Post object with the provided title and content
-
                 dialog.dismiss();
             } else {
                 Toast.makeText(getContext(), "Title cannot be empty", Toast.LENGTH_SHORT).show();
@@ -148,15 +218,11 @@ public class HomeFragment extends Fragment{
         btnCancel.setOnClickListener(v -> dialog.dismiss());
     }
 
-
-
     @Override
     public void onResume() {
         super.onResume();
-        // Ensure Home is selected when returning to this fragment
         if (bottomNavigationView != null) {
             bottomNavigationView.setSelectedItemId(R.id.bottom_home);
         }
     }
-
 }
