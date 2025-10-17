@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
@@ -22,6 +23,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     public PostAdapter(List<Post> postList, OnPostClickListener onPostClickListener) {
         this.postList = postList;
         this.onPostClickListener = onPostClickListener;
+    }
+
+    public void updatePosts(List<Post> newPosts) {
+        this.postList = new ArrayList<>(newPosts);
+        notifyDataSetChanged();
     }
 
     @NonNull
