@@ -1,11 +1,9 @@
 package com.example.redditclone;
+
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,19 +13,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -36,48 +26,42 @@ import androidx.fragment.app.FragmentTransaction;
 import com.bumptech.glide.Glide;
 import com.example.redditclone.fragment.CurateFragment;
 import com.example.redditclone.fragment.HomeFragment;
-import com.example.redditclone.fragment.MyProfileFragment;
 import com.example.redditclone.fragment.PremiumFragment;
-import com.example.redditclone.fragment.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, MyProfileFragment.ProfileUpdateListener {
 
     public static final int MY_REQUEST_CODE = 10;
     private DrawerLayout mDrawerLayout;
     private ImageView imgavatar;
     private TextView tvname, tvemail;
-    private final MyProfileFragment mMyProfileFragment = new MyProfileFragment();
     private Fragment mActiveFragment;
+    private Toolbar mToolbar;
 
-    public static final int FRAGMENT_PROFILE = 0;
+    public static final int FRAGMENT_HOME = 0;
     private static final int FRAGMENT_CURATE = 1;
     private static final int FRAGMENT_PREMIUM = 2;
     private static final int FRAGMENT_MY_PROFILE = 3;
 
     private NavigationView mNavigationView;
 
-    private int mCurrentFragment = FRAGMENT_PROFILE;
+    private int mCurrentFragment = FRAGMENT_HOME;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
 
         initUI();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar,
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
@@ -89,82 +73,159 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mNavigationView.setNavigationItemSelectedListener(this);
 
-        switchFragment(FRAGMENT_PROFILE, new HomeFragment());
-        mNavigationView.getMenu().findItem(R.id.nav_home).setChecked(true);
+        if (savedInstanceState == null) {
+            switchFragment(FRAGMENT_HOME, new HomeFragment());
+            mNavigationView.getMenu().findItem(R.id.nav_home).setChecked(true);
+        }
 
         showUserInfomation();
+        setupBackStackListener();
 
         View headerView = mNavigationView.getHeaderView(0);
         View curateItemView = headerView.findViewById(R.id.curate_content_item);
 
         if (curateItemView != null) {
-            curateItemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mDrawerLayout.closeDrawer(GravityCompat.END);
-                    if (mCurrentFragment != FRAGMENT_CURATE) {
-                        replaceFragment(new CurateFragment());
-                        mCurrentFragment = FRAGMENT_CURATE;
-                    }
+            curateItemView.setOnClickListener(v -> {
+                mDrawerLayout.closeDrawer(GravityCompat.END);
+                if (mCurrentFragment != FRAGMENT_CURATE) {
+                    replaceFragment(new CurateFragment());
+                    mCurrentFragment = FRAGMENT_CURATE;
                 }
             });
         }
-
-
     }
+
+    private void setupBackStackListener() {
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+            if (mToolbar != null) {
+                if (currentFragment instanceof MyProfileFragment || currentFragment instanceof EditProfileFragment) {
+                    mToolbar.setVisibility(View.GONE);
+                } else {
+                    mToolbar.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+    }
+
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
-    }
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i("MainActivity", "onStart was called");
-    }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.i("MainActivity", "onStop was called");
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.i("MainActivity", "onPause was called");
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i("MainActivity", "onResume was called");
+    public void onProfileUpdated() {
+        Log.d("MainActivity", "Profile update received. Refreshing sidebar info.");
+        showUserInfomation();
     }
 
+    // THAY ĐỔI: Áp dụng AppExecutors cho hàm showUserInfomation
+    public void showUserInfomation() {
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            // Tác vụ chạy nền: Lấy thông tin người dùng
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user == null) {
+                return;
+            }
+            final String strName = user.getDisplayName();
+            final String strEmail = user.getEmail();
+            final Uri photoUrl = user.getPhotoUrl();
 
-    private void initUI() {
-        mNavigationView = findViewById(R.id.nav_view);
-        imgavatar = mNavigationView.getHeaderView(0).findViewById(R.id.img_avatar);
-        tvname = mNavigationView.getHeaderView(0).findViewById(R.id.tv_name);
-        tvemail = mNavigationView.getHeaderView(0).findViewById(R.id.tv_email);
-
-
+            // Gửi kết quả về luồng chính để cập nhật UI
+            AppExecutors.getInstance().mainThread().execute(() -> {
+                if (strName == null || strName.isEmpty()) {
+                    tvname.setText("User");
+                } else {
+                    tvname.setText("u/" + strName);
+                }
+                tvemail.setText(strEmail);
+                Glide.with(MainActivity.this)
+                        .load(photoUrl)
+                        .error(R.drawable.profile_default)
+                        .into(imgavatar);
+            });
+        });
     }
+
+    // ... (Toàn bộ các hàm còn lại giữ nguyên như cũ)
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         int id = menuItem.getItemId();
-        if (id == R.id.nav_curate) {
+        if (id == R.id.nav_home) {
+            switchFragment(FRAGMENT_HOME, new HomeFragment());
+        } else if (id == R.id.nav_curate) {
             switchFragment(FRAGMENT_CURATE, new CurateFragment());
         } else if (id == R.id.nav_premium) {
             switchFragment(FRAGMENT_PREMIUM, new PremiumFragment());
         } else if (id == R.id.nav_Log_out) {
             // ... (Logic Log out)
         } else if (id == R.id.nav_my_profile) {
-            switchFragment(FRAGMENT_MY_PROFILE, mMyProfileFragment);
+            showProfileFragment();
         }
 
-
         mDrawerLayout.closeDrawer(GravityCompat.END);
+        return true;
+    }
+
+    private void showProfileFragment() {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_frame, new MyProfileFragment());
+        transaction.addToBackStack(null);
+        transaction.commit();
+        mCurrentFragment = FRAGMENT_MY_PROFILE;
+    }
+
+    public void switchFragment(int fragmentConstant, Fragment newFragment) {
+        if (mCurrentFragment == fragmentConstant && getSupportFragmentManager().findFragmentByTag(String.valueOf(fragmentConstant)) != null) {
+            return;
+        }
+
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+        Fragment currentActiveFragment = findVisibleFragment(fm);
+        if (currentActiveFragment != null) {
+            ft.hide(currentActiveFragment);
+        }
+
+        Fragment targetFragment = fm.findFragmentByTag(String.valueOf(fragmentConstant));
+
+        if (targetFragment != null) {
+            ft.show(targetFragment);
+        } else {
+            ft.add(R.id.content_frame, newFragment, String.valueOf(fragmentConstant));
+        }
+
+        mCurrentFragment = fragmentConstant;
+        ft.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.END)) {
+            mDrawerLayout.closeDrawer(GravityCompat.END);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private Fragment findVisibleFragment(FragmentManager fm) {
+        for (Fragment fragment : fm.getFragments()) {
+            if (fragment.isVisible()) {
+                return fragment;
+            }
+        }
+        return null;
+    }
+
+    private void initUI() {
+        mNavigationView = findViewById(R.id.nav_view);
+        imgavatar = mNavigationView.getHeaderView(0).findViewById(R.id.img_avatar);
+        tvname = mNavigationView.getHeaderView(0).findViewById(R.id.tv_name);
+        tvemail = mNavigationView.getHeaderView(0).findViewById(R.id.tv_email);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
         return true;
     }
 
@@ -182,91 +243,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         transaction.replace(R.id.content_frame, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        if (fragment instanceof CurateFragment) {
-            if (toolbar != null) {
-                toolbar.setVisibility(View.GONE);
-            }
-        } else {
-            if (toolbar != null) {
-                toolbar.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-    public void showUserInfomation(){
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
-            return;
-        }
-        String strName = user.getDisplayName();
-        String strEmail = user.getEmail();
-        Uri photoUrl = user.getPhotoUrl();
-        if (strName == null) {
-            tvname.setVisibility(View.GONE);
-        }else {
-            tvname.setVisibility(View.VISIBLE);
-        }
-        tvname.setText("u/" + strName);
-        tvemail.setText(strEmail);
-        Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == MY_REQUEST_CODE){
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                openGallery();
-            }else {
+        if (requestCode == MY_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // openGallery();
+            } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    public void openGallery() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-
-    }
-
-    public void switchFragment(int fragmentConstant, Fragment newFragment) {
-        if (mCurrentFragment == fragmentConstant) {
-            return; // Đã ở Fragment này rồi, không làm gì cả.
-        }
-
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-
-        // 1. Ẩn Fragment đang hoạt động (Active Fragment)
-        if (mActiveFragment != null) {
-            ft.hide(mActiveFragment);
-        }
-
-        // 2. Tìm Fragment mục tiêu (nếu đã tồn tại)
-        Fragment targetFragment = fm.findFragmentByTag(String.valueOf(fragmentConstant));
-
-        if (targetFragment != null) {
-            // 3. Nếu Fragment đã tồn tại, hiện nó
-            ft.show(targetFragment);
-            mActiveFragment = targetFragment;
-        } else {
-            // 4. Nếu Fragment chưa tồn tại, thêm nó vào và gán Tag
-            // KHÔNG dùng addToBackStack ở đây cho các Fragment chính
-            ft.add(R.id.content_frame, newFragment, String.valueOf(fragmentConstant));
-            mActiveFragment = newFragment;
-        }
-
-        // Xử lý ẩn/hiện Toolbar (giống logic cũ của bạn)
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        if (mActiveFragment instanceof CurateFragment) {
-            if (toolbar != null) toolbar.setVisibility(View.GONE);
-        } else {
-            if (toolbar != null) toolbar.setVisibility(View.VISIBLE);
-        }
-
-        mCurrentFragment = fragmentConstant;
-        ft.commit();
     }
 }

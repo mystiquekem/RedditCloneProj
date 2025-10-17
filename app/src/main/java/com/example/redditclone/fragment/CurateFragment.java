@@ -37,7 +37,7 @@ public class CurateFragment extends Fragment {
 
                         // Giả định HomeFragment là FRAGMENT_PROFILE (hoặc một hằng số khác mà bạn dùng cho Home)
                         // Cần đảm bảo FRAGMENT_PROFILE và switchFragment là public trong MainActivity
-                        mainActivity.switchFragment(MainActivity.FRAGMENT_PROFILE, new HomeFragment());
+                        mainActivity.switchFragment(MainActivity.FRAGMENT_HOME, new HomeFragment());
                     }
                 }
             });
