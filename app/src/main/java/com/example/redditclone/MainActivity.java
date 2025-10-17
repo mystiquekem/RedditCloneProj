@@ -45,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int FRAGMENT_PREMIUM = 2;
     private static final int FRAGMENT_MY_PROFILE = 3;
 
+    private static final int FRAGMENT_LOG_OUT = 4;
+
+
     private NavigationView mNavigationView;
 
     private int mCurrentFragment = FRAGMENT_HOME;
@@ -157,7 +160,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_premium) {
             switchFragment(FRAGMENT_PREMIUM, new PremiumFragment());
         } else if (id == R.id.nav_Log_out) {
-            // ... (Logic Log out)
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+            startActivity(intent);
+            finish();
         } else if (id == R.id.nav_my_profile) {
             showProfileFragment();
         }
