@@ -30,9 +30,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
+import com.example.redditclone.fragment.CurateFragment;
 import com.example.redditclone.fragment.HomeFragment;
 import com.example.redditclone.fragment.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
@@ -40,8 +42,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import com.example.redditclone.MainActivity;
+import com.example.redditclone.fragment.HomeFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ImageView imgavatar;
     private TextView tvname, tvemail;
     private final MyProfileFragment mMyProfileFragment = new MyProfileFragment();
-
+    private Fragment mActiveFragment;
     private final ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
@@ -72,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     });
 
-    private static final int FRAGMENT_PROFILE = 0;
+    public static final int FRAGMENT_PROFILE = 0;
     private static final int FRAGMENT_CURATE = 1;
     private static final int FRAGMENT_PREMIUM = 2;
     private static final int FRAGMENT_MY_PROFILE = 3;
@@ -105,10 +107,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mNavigationView.setNavigationItemSelectedListener(this);
 
-        replaceFragment(new HomeFragment());
+        switchFragment(FRAGMENT_PROFILE, new HomeFragment());
         mNavigationView.getMenu().findItem(R.id.nav_home).setChecked(true);
 
         showUserInfomation();
+
+        View headerView = mNavigationView.getHeaderView(0);
+        View curate_content_item = headerView.findViewById(R.id.curate_content_item);
+        if (curate_content_item != null) {
+            curate_content_item.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDrawerLayout.closeDrawer(GravityCompat.END);
+                    if (mCurrentFragment != FRAGMENT_CURATE) {
+                        replaceFragment(new CurateFragment());
+                        mCurrentFragment = FRAGMENT_CURATE;
+                    }
+                }
+            });
+        }
 
 
     }
@@ -154,11 +171,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         int id = menuItem.getItemId();
         if (id == R.id.nav_curate) {
-            // Handle the curate action
-            if (mCurrentFragment != FRAGMENT_CURATE) {
-                replaceFragment(new ProfileFragment());
-                mCurrentFragment = FRAGMENT_CURATE;
-            }
+            switchFragment(FRAGMENT_CURATE, new CurateFragment());
         } else if (id == R.id.nav_premium) {
             // Handle the premium action
             if (mCurrentFragment != FRAGMENT_PREMIUM) {
@@ -193,7 +206,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void replaceFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content_frame, fragment);
+        transaction.addToBackStack(null);
         transaction.commit();
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        if (fragment instanceof CurateFragment) {
+            if (toolbar != null) {
+                toolbar.setVisibility(View.GONE);
+            }
+        } else {
+            if (toolbar != null) {
+                toolbar.setVisibility(View.VISIBLE);
+            }
+        }
     }
     public void showUserInfomation(){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -230,5 +254,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+    }
+
+    public void switchFragment(int fragmentConstant, Fragment newFragment) {
+        if (mCurrentFragment == fragmentConstant) {
+            return;
+        }
+
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+
+        if (mActiveFragment != null) {
+            ft.hide(mActiveFragment);
+        }
+
+
+        Fragment targetFragment = fm.findFragmentByTag(String.valueOf(fragmentConstant));
+
+        if (targetFragment != null) {
+
+            ft.show(targetFragment);
+            mActiveFragment = targetFragment;
+        } else {
+            ft.add(R.id.content_frame, newFragment, String.valueOf(fragmentConstant));
+            mActiveFragment = newFragment;
+        }
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        if (mActiveFragment instanceof CurateFragment) {
+            if (toolbar != null) toolbar.setVisibility(View.GONE);
+        } else {
+            if (toolbar != null) toolbar.setVisibility(View.VISIBLE);
+        }
+
+        mCurrentFragment = fragmentConstant;
+        ft.commit();
     }
 }
