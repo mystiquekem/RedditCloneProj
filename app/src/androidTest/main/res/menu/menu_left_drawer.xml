@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_left_discover_communities"
+            android:icon="@drawable/ic_home"
+            android:title="Discover communities"
+            tools:ignore="HardcodedText"/>
+        <item
+            android:id="@+id/nav_left_start_community"
+            android:icon="@drawable/ic_community"
+            android:title="Start a community"
+            tools:ignore="HardcodedText"/>
+        <item
+            android:id="@+id/nav_left_Games"
+            android:icon="@drawable/ic_community"
+            android:title="Discover more games"
+            tools:ignore="HardcodedText"/>
+        <item
+            android:id="@+id/nav_left_Reddit_pro"
+            android:icon="@drawable/ic_community"
+            android:title="Try Reddit Pro"
+            tools:ignore="HardcodedText"/>
+        <item
+            android:id="@+id/nav_left_feed_custom"
+            android:icon="@drawable/ic_community"
+            android:title="Custom Feeds"
+            tools:ignore="HardcodedText"/>
+        <item
+            android:id="@+id/nav_left_all"
+            android:icon="@drawable/ic_curate"
+            android:title="All"
+            tools:ignore="HardcodedText"/>
+    </group>
+</menu>

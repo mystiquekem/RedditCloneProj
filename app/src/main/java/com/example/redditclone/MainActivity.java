@@ -36,14 +36,16 @@ import androidx.fragment.app.FragmentTransaction;
 import com.bumptech.glide.Glide;
 import com.example.redditclone.fragment.CurateFragment;
 import com.example.redditclone.fragment.HomeFragment;
+import com.example.redditclone.fragment.MyProfileFragment;
+import com.example.redditclone.fragment.PremiumFragment;
 import com.example.redditclone.fragment.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
-import com.example.redditclone.MainActivity;
-import com.example.redditclone.fragment.HomeFragment;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -53,26 +55,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView tvname, tvemail;
     private final MyProfileFragment mMyProfileFragment = new MyProfileFragment();
     private Fragment mActiveFragment;
-    private final ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if(result.getResultCode() == RESULT_OK){
-                Intent intent = result.getData();
-                if (intent == null){
-                    return;
-                }
-                Uri uri = intent.getData();
-                mMyProfileFragment.setUri(uri);
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    mMyProfileFragment.setBitmapImageView(bitmap);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
 
     public static final int FRAGMENT_PROFILE = 0;
     private static final int FRAGMENT_CURATE = 1;
@@ -113,9 +95,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         showUserInfomation();
 
         View headerView = mNavigationView.getHeaderView(0);
-        View curate_content_item = headerView.findViewById(R.id.curate_content_item);
-        if (curate_content_item != null) {
-            curate_content_item.setOnClickListener(new View.OnClickListener() {
+        View curateItemView = headerView.findViewById(R.id.curate_content_item);
+
+        if (curateItemView != null) {
+            curateItemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mDrawerLayout.closeDrawer(GravityCompat.END);
@@ -173,22 +156,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.nav_curate) {
             switchFragment(FRAGMENT_CURATE, new CurateFragment());
         } else if (id == R.id.nav_premium) {
-            // Handle the premium action
-            if (mCurrentFragment != FRAGMENT_PREMIUM) {
-                replaceFragment(new ProfileFragment());
-                mCurrentFragment = FRAGMENT_PREMIUM;
-            }
+            switchFragment(FRAGMENT_PREMIUM, new PremiumFragment());
         } else if (id == R.id.nav_Log_out) {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(this, SignInActivity.class);
-            startActivity(intent);
-            finish();
+            // ... (Logic Log out)
         } else if (id == R.id.nav_my_profile) {
-            if (mCurrentFragment != FRAGMENT_MY_PROFILE) {
-                replaceFragment(mMyProfileFragment);
-                mCurrentFragment = FRAGMENT_MY_PROFILE;
-            }
+            switchFragment(FRAGMENT_MY_PROFILE, mMyProfileFragment);
         }
+
 
         mDrawerLayout.closeDrawer(GravityCompat.END);
         return true;
@@ -208,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         transaction.replace(R.id.content_frame, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         if (fragment instanceof CurateFragment) {
             if (toolbar != null) {
@@ -224,17 +199,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (user == null){
             return;
         }
-            String strName = user.getDisplayName();
-            String strEmail = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+        String strName = user.getDisplayName();
+        String strEmail = user.getEmail();
+        Uri photoUrl = user.getPhotoUrl();
         if (strName == null) {
             tvname.setVisibility(View.GONE);
         }else {
             tvname.setVisibility(View.VISIBLE);
         }
-            tvname.setText("u/" + strName);
-            tvemail.setText(strEmail);
-            Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
+        tvname.setText("u/" + strName);
+        tvemail.setText(strEmail);
+        Glide.with(this).load(photoUrl).error(R.drawable.profile_default).into(imgavatar);
     }
 
     @Override
@@ -253,34 +228,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+
     }
 
     public void switchFragment(int fragmentConstant, Fragment newFragment) {
         if (mCurrentFragment == fragmentConstant) {
-            return;
+            return; // Đã ở Fragment này rồi, không làm gì cả.
         }
 
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
 
-
+        // 1. Ẩn Fragment đang hoạt động (Active Fragment)
         if (mActiveFragment != null) {
             ft.hide(mActiveFragment);
         }
 
-
+        // 2. Tìm Fragment mục tiêu (nếu đã tồn tại)
         Fragment targetFragment = fm.findFragmentByTag(String.valueOf(fragmentConstant));
 
         if (targetFragment != null) {
-
+            // 3. Nếu Fragment đã tồn tại, hiện nó
             ft.show(targetFragment);
             mActiveFragment = targetFragment;
         } else {
+            // 4. Nếu Fragment chưa tồn tại, thêm nó vào và gán Tag
+            // KHÔNG dùng addToBackStack ở đây cho các Fragment chính
             ft.add(R.id.content_frame, newFragment, String.valueOf(fragmentConstant));
             mActiveFragment = newFragment;
         }
 
+        // Xử lý ẩn/hiện Toolbar (giống logic cũ của bạn)
         Toolbar toolbar = findViewById(R.id.toolbar);
         if (mActiveFragment instanceof CurateFragment) {
             if (toolbar != null) toolbar.setVisibility(View.GONE);

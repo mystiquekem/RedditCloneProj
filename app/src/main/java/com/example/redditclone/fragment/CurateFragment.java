@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment;
 
 import com.example.redditclone.MainActivity;
 import com.example.redditclone.R;
+import com.example.redditclone.MainActivity;
+import com.example.redditclone.fragment.HomeFragment;
 
 public class CurateFragment extends Fragment {
 
@@ -40,7 +42,6 @@ public class CurateFragment extends Fragment {
                 }
             });
         }
-
         return view;
     }
 
