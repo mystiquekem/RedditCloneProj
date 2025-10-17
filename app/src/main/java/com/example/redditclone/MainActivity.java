@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(mToolbar);
 
         initUI();
+        setupBottomNavigation();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    private com.google.android.material.bottomnavigation.BottomNavigationView bottomNavigationView;
 
     @Override
     public void onProfileUpdated() {
@@ -226,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         imgavatar = mNavigationView.getHeaderView(0).findViewById(R.id.img_avatar);
         tvname = mNavigationView.getHeaderView(0).findViewById(R.id.tv_name);
         tvemail = mNavigationView.getHeaderView(0).findViewById(R.id.tv_email);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
     }
 
     @Override
@@ -262,4 +265,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
+
+    private void setupBottomNavigation() {
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.bottom_home) {
+                replaceFragment(new HomeFragment());
+                return true;
+            }
+            else if (itemId == R.id.bottom_answers) {
+                replaceFragment(new HomeFragment()); // Temporary
+                return true;
+            }
+            else if (itemId == R.id.bottom_create) {
+                // SIMPLE: Just call HomeFragment's method
+                openCreatePostDialog();
+                return true;
+            }
+            else if (itemId == R.id.bottom_chat) {
+                replaceFragment(new HomeFragment()); // Temporary
+                return true;
+            }
+            else if (itemId == R.id.bottom_inbox) {
+                replaceFragment(new HomeFragment()); // Temporary
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    // Simple method to open create post dialog
+    private void openCreatePostDialog() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+
+        if (currentFragment instanceof HomeFragment) {
+            // Directly call the method from HomeFragment
+            ((HomeFragment) currentFragment).showCreatePostDialog();
+        } else {
+            // If not in HomeFragment, switch to it first
+            replaceFragment(new HomeFragment());
+            // Show message to user
+            Toast.makeText(this, "Switched to Home - tap create again to post", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
 }

@@ -65,6 +65,7 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+
     private void initViews(View view) {
         recyclerView = view.findViewById(R.id.rvPosts);
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
@@ -72,7 +73,8 @@ public class HomeFragment extends Fragment {
 
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-        postAdapter = new PostAdapter(postList);
+        postAdapter = new PostAdapter(postList, this::onPostClick);
+
         recyclerView.setAdapter(postAdapter);
 
         if (getActivity() != null) {
@@ -115,7 +117,11 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+    private void onPostClick(Post post) {
+        // Handle post click - for now just show a toast
+        Toast.makeText(getContext(), "Clicked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
 
+    }
     private void fetchPosts(String after) {
         apiService.getPosts().enqueue(new Callback<RedditResponse>() {
             @Override
@@ -186,7 +192,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void showCreatePostDialog() {
+    public void showCreatePostDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.FullScreenDialogStyle);
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_post, null);
