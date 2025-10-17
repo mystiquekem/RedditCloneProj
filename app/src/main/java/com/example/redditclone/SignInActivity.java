@@ -30,6 +30,8 @@ public class SignInActivity extends AppCompatActivity {
     private EditText edtEmail, edtPassword;
     private Button btnSignIn;
     private ProgressDialog progressDialog;
+    private LinearLayout layoutForgotPassword;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,7 @@ public class SignInActivity extends AppCompatActivity {
         edtEmail = findViewById(R.id.edt_email);
         edtPassword = findViewById(R.id.edt_password);
         btnSignIn = findViewById(R.id.btn_sign_in);
+        layoutForgotPassword = findViewById(R.id.layout_forgot_password);
 
     }
 
@@ -71,6 +74,13 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 onClickSignIn();
+            }
+        });
+
+        layoutForgotPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickForgotPassword();
             }
         });
     }
@@ -95,5 +105,9 @@ public class SignInActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+    private void onClickForgotPassword() {
+        Intent intent = new Intent(SignInActivity.this, ForgotPasswordActivity.class);
+        startActivity(intent);
     }
 }
