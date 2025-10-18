@@ -1,65 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@android:color/white">
+    android:padding="16dp"
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_marginRight="161dp"
-            android:layout_marginTop="-4dp"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/ic_cancel" />
-
-        <Button
-            android:id="@+id/btnPost"
-            android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="#FF4500"
-            android:layout_marginStart="94dp"
-            android:text="Post"
-            android:background="@drawable/oval_button"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white" />
+            android:text="Create Post"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etPostTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Title"
+            android:maxLines="2"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etPostContent"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Content (optional)"
+            android:gravity="top"
+            android:maxLines="5"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Image Selection Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Image (optional)"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnSelectImage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Select Image"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnRemoveImage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Remove"
+                    android:visibility="gone"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/ivSelectedImage"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone"
+                android:scaleType="centerCrop"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Cancel"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/gray" />
+
+            <Button
+                android:id="@+id/btnPost"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Post"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/orange" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/etPostTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Title"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:background="@null"
-        android:paddingBottom="15dp"
-        android:paddingTop="5dp" />
-
-    <EditText
-        android:id="@+id/etPostContent"
-        android:layout_width="match_parent"
-        android:layout_height="514dp"
-        android:background="@null"
-        android:gravity="top"
-        android:hint="Body text (Optional)"
-        android:inputType="textMultiLine"
-        android:minLines="5"
-        android:paddingBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnAddImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Image"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="12dp" />
-
-</LinearLayout>
+</ScrollView>

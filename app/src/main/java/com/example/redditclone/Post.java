@@ -87,7 +87,16 @@ public class Post {
     public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
 
     // Check if post has a displayable image
+
     public boolean hasImage() {
+        if (isLocal && imageUrl != null && !imageUrl.isEmpty()) {
+            // For local posts, check if it's a content URI
+            return imageUrl.startsWith("content://") ||
+                    imageUrl.startsWith("file://") ||
+                    (imageUrl.startsWith("http") && !imageUrl.contains("self") && !imageUrl.contains("reddit.com"));
+        }
+
+        // Original logic for API posts
         return imageUrl != null &&
                 !imageUrl.isEmpty() &&
                 !imageUrl.contains("self") &&
